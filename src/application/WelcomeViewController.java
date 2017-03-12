@@ -48,6 +48,14 @@ public class WelcomeViewController implements Initializable {
 		{
 			if(rdNew.isSelected()){
 				//load new game screen
+				((Node)event.getSource()).getScene().getWindow().hide();
+			    Parent Welcome_view = FXMLLoader.load(getClass().getResource("NewGameInfoView.fxml"));
+			    Scene Welcome = new Scene(Welcome_view);
+                Stage welcome = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                welcome.hide();
+                welcome.setScene(Welcome);
+                welcome.setTitle("NewGame");
+                welcome.show();
 			}
 			else if(rdExisting.isSelected()){
 				//load up an existing game

@@ -46,7 +46,7 @@ import javafx.scene.control.TableColumn;
 
 public class NewGameInfoViewController implements Initializable {
 	
-	public NewGameInfoModel Employee_Table_Screen = new NewGameInfoModel();
+	public NewGameInfoModel Word_Table_Screen = new NewGameInfoModel();
 	
 	//Features of the UI
 	@FXML
@@ -63,6 +63,10 @@ public class NewGameInfoViewController implements Initializable {
 	private TextField txtCreatorName;
 	@FXML
 	private TextField txtGameTitle;
+	@FXML
+	private TextField txtGameID;
+	@FXML
+	private Label txtTitleChart;
 
 	
 	@FXML
@@ -75,6 +79,7 @@ public class NewGameInfoViewController implements Initializable {
 	
 	private boolean isMainMenuAddNewButtonClick;
 	private boolean isMainMenuEditButtonClick;
+	private boolean GameIDPass;
 	
 	Connection connection;
     private Statement statement;
@@ -89,9 +94,9 @@ public class NewGameInfoViewController implements Initializable {
         WordColumn.setCellValueFactory(new PropertyValueFactory<NewGameInfoModel, String>("Word")); 
         HintColumn.setCellValueFactory(new PropertyValueFactory<NewGameInfoModel, String>("Hint"));
        
-        
+        GameIDPass = false;
         //Sets the values of the table from the Employee Screen
-        TableWords.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames"));
+        //TableWords.setItems(Word_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames where ParentGame ID ="));
 
     }
 	
@@ -105,8 +110,8 @@ public class NewGameInfoViewController implements Initializable {
 	
 	//Enables the field so the user can type the employee information
 	private void MainMenuSetAllEnable(){
-        txtWord.setDisable(true);
-        txtHint.setDisable(true);
+        txtWord.setDisable(false);
+        txtHint.setDisable(false);
         
 
         MainMenuSaveButton.setDisable(false);
@@ -116,8 +121,8 @@ public class NewGameInfoViewController implements Initializable {
 	
 	//Disables all text fields
 	private void MainMenuSetAllDisable(){
-		 txtWord.setDisable(false);
-	     txtHint.setDisable(false);
+		 txtWord.setDisable(true);
+	     txtHint.setDisable(true);
         
 
         MainMenuSaveButton.setDisable(true);
@@ -147,33 +152,25 @@ public class NewGameInfoViewController implements Initializable {
 	    private void setMainMenuSaveButtonClick(Event event){
 	        try{	       
 	  
-	            if(validateFirstName() && validateLastName() && validateEmail() && validatePhone() && validateDOB() && validateAddress()){
+	            if(validateWord() && validateHint() && validateCreatorName() && validateGameName() && (validateParentID() || GameIDPass)){
 	            	
 	            	connection = SqliteConnection.Connector();
 		            statement = connection.createStatement();
 		            
 	            	if(isMainMenuAddNewButtonClick){
-		                int rowsAffected = statement.executeUpdate("insert into`Employees` "+
-		                        "(`First_Name`,`Last_Name`,`Email`,`Phone`,"+
-		                        "`Address`,`DOB`"+
-		                        ") "+
-		                        "values ('"+txtFirst_Name.getText()+"','"+txtLast_Name.getText()+"','"+txtEmail.getText()
-		                        +"','"+txtPhone.getText()
-		                        +"','"+txtAddress.getText()
-		                        +"','"+dtDOB.getValue().toString()
+		                int rowsAffected = statement.executeUpdate("insert into`WordGames` "+
+		                        "(`Creator Name`,`Game Name`,`Words`,`Hints`,`ParentGameID`) "+
+		                        "values ('"+txtCreatorName.getText()+"','"+txtGameTitle.getText()+"','"+txtWord.getText()
+		                        +"','"+txtHint.getText()+"','" + txtGameID.getText()
 		                        +"'); ");
 		           
 		            }
 		            else if (isMainMenuEditButtonClick){
 
-		                int rowsAffected = statement.executeUpdate("update Employees set "+
-		                        "First_Name = '"+txtFirst_Name.getText()+"',"+
-		                        "Last_Name = '"+txtLast_Name.getText()+"',"+                      
-		                        "Email = '"+txtEmail.getText()+"',"+
-		                        "Phone = '"+txtPhone.getText()+"',"+
-		                        "Address = '"+txtAddress.getText()+"',"+
-		                        "DOB = '"+dtDOB.getValue()+
-		                        "' where ID = "+
+		                int rowsAffected = statement.executeUpdate("update WordGames set "+
+		                        "Words = '"+txtWord.getText()+"',"+
+		                        "Hints = '"+txtHint.getText()+"'"+                      
+		                        " where ID = "+
 		                        temp+";");	               
 		            }
 
@@ -182,17 +179,20 @@ public class NewGameInfoViewController implements Initializable {
 		            
 		            MainMenuSetAllClear();
 			        MainMenuSetAllDisable();
-			        TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM Employees;"));
+			        txtCreatorName.setDisable(true);
+			        txtGameTitle.setDisable(true);
+			        txtGameID.setDisable(true);
+			        TableWords.setItems(Word_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames where ParentGameID = "+txtGameID.getText()+";"));
+			        txtTitleChart.setText(txtGameTitle.getText() + " by "+ txtCreatorName.getText());
+			        
 			        isMainMenuEditButtonClick=false;
 			        isMainMenuAddNewButtonClick = false;
 			        
-					txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-					txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-					txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-					txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-					txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-					dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-
+					txtWord.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
+					txtHint.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
+					txtCreatorName.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
+					txtGameTitle.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
+					
 	            }
 	        }
 		        catch (SQLException e){
@@ -207,9 +207,9 @@ public class NewGameInfoViewController implements Initializable {
 	 @FXML
 	    private void setMainMenuEditButtonClick(Event event){
 	        
-	     if(TableEmployees.getSelectionModel().getSelectedItem()!=null) {
-	    	 Main_Menu_EmployeeModel getSelectedRow = TableEmployees.getSelectionModel().getSelectedItem();
-	        	String sqlQuery = "select * FROM Employees where ID = "+getSelectedRow.getEmployeesID()+";";
+	     if(TableWords.getSelectionModel().getSelectedItem()!=null) {
+	    	    NewGameInfoModel getSelectedRow = TableWords.getSelectionModel().getSelectedItem();
+	        	String sqlQuery = "select * FROM WordGames where ID = "+getSelectedRow.getID()+";";
 	        	 
 	        try {
 	        	 connection = SqliteConnection.Connector();
@@ -218,12 +218,9 @@ public class NewGameInfoViewController implements Initializable {
 	        
 	             MainMenuSetAllEnable();
 	             while(resultSet.next()) {
-	                 txtFirst_Name.setText(resultSet.getString("First_Name"));
-	                 txtLast_Name.setText(resultSet.getString("Last_Name"));
-	                 txtEmail.setText(resultSet.getString("Email"));
-	                 txtPhone.setText(resultSet.getString("Phone"));
-	                 txtAddress.setText(resultSet.getString("Address"));
-	                 dtDOB.setValue(LocalDate.parse(resultSet.getString("DOB")));
+	                 txtWord.setText(resultSet.getString("Words"));
+	                 txtHint.setText(resultSet.getString("Hints"));
+	     
 	                 temp = resultSet.getInt("ID");
 	 	             isMainMenuEditButtonClick = true;
 	            }
@@ -238,8 +235,8 @@ public class NewGameInfoViewController implements Initializable {
 	     else{
 	    	    NotificationType notificationType = NotificationType.ERROR;
 	            TrayNotification tray = new TrayNotification();
-	            tray.setTitle("No Employee Selected");
-	            tray.setMessage("To edit, please select an Employee from the table");
+	            tray.setTitle("No Word Selected");
+	            tray.setMessage("To edit, please select a word from the table");
 	            tray.setNotificationType(notificationType);
 	            tray.showAndDismiss(Duration.millis(5000));
 	     }
@@ -249,20 +246,18 @@ public class NewGameInfoViewController implements Initializable {
 	 //Deletes an employee from the Employee Database and refreshes the table
 	 @FXML
 	    private void setMainMenuDeleteButtonClick(Event event){
-		 	TableEmployees.setPlaceholder(new Label("No Employees"));
-		 	if(TableEmployees.getSelectionModel().getSelectedItem()!=null){
-		 		Main_Menu_EmployeeModel getSelectedRow = TableEmployees.getSelectionModel().getSelectedItem();
-		        String sqlQuery = "delete from Employees where ID = '"+getSelectedRow.getEmployeesID()+"';";
-		        String sqlQuery2 = "delete from Employees_Schedule where ID = '"+getSelectedRow.getEmployeesID()+"';";
+		 	TableWords.setPlaceholder(new Label("No Words"));
+		 	if(TableWords.getSelectionModel().getSelectedItem()!=null){
+		 		NewGameInfoModel getSelectedRow = TableWords.getSelectionModel().getSelectedItem();
+		        String sqlQuery = "delete from WordGames where ID = '"+getSelectedRow.getID()+"';";
 		        
 		        try {
 		        	connection = SqliteConnection.Connector();
 			        statement = connection.createStatement();
 		             
 		            statement.executeUpdate(sqlQuery);
-		            statement.executeUpdate(sqlQuery2);
 		       
-		            TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM Employees;"));
+		            TableWords.setItems(Word_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames;"));
 		            statement.close();
 		            connection.close();
 
@@ -274,323 +269,134 @@ public class NewGameInfoViewController implements Initializable {
 		 	else{
 		 		NotificationType notificationType = NotificationType.ERROR;
 	            TrayNotification tray = new TrayNotification();
-	            tray.setTitle("No Employee Selected");
-	            tray.setMessage("To delete, please select an Employee from the table");
+	            tray.setTitle("No Word Selected");
+	            tray.setMessage("To delete, please select a Word from the table");
 	            tray.setNotificationType(notificationType);
 	            tray.showAndDismiss(Duration.millis(5000));
 		 	}        
 	    }
 	 
-	 //Method to search for an employee based on given ID
-	 @FXML
-	    private void setMainMenuSearchButtonClick(Event event){
-	        String sqlQuery = "select * FROM Employees where ID = '"+txtSearch.getText()+"';";
-	        TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList(sqlQuery));
-	    }
-	 
-	 //Method to refresh employee table
-	 @FXML
-	    private void setMainMenuRefreshButtonClick(Event event){
-	        TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM Employees;"));//sql Query
-	        txtSearch.clear();
-	    }
-	 
-	 //The following launch methods are for loading other screens in the program when their respective buttons are clicked
-	 @FXML
-	    private void launchScheduler(Event event) throws IOException{
-		 	((Node)event.getSource()).getScene().getWindow().hide();
-		 	Parent Scheduler = FXMLLoader.load(getClass().getResource("Employee_Shift_Scheduler.fxml"));
-		 	Scene scheduler = new Scene(Scheduler);
-		 	Stage Schedule = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		 	Schedule.hide();
-		 	Schedule.setScene(scheduler);
-		 	Schedule.setTitle("Scheduler");
-		 	Schedule.show();
-	    }
-	 
-
-	 @FXML
-	    private void launchCustomerScreen(Event event) throws IOException{
-		 	((Node)event.getSource()).getScene().getWindow().hide();
-		 	Parent CustomerScreen = FXMLLoader.load(getClass().getResource("Menu_Customer.fxml"));
-		 	Scene customer_screen = new Scene(CustomerScreen);
-		 	Stage Customer_Screen = (Stage) ((Node) event.getSource()).getScene().getWindow();
-		 	Customer_Screen.hide();
-		 	Customer_Screen.setScene(customer_screen);
-		 	Customer_Screen.setTitle("Customer Screen");
-		 	Customer_Screen.show();
-	    }
-	 
-	 @FXML
-	    private void launchBarChart(Event event) throws IOException{
-		 	FXMLLoader loader = new FXMLLoader();
-	        loader.setLocation(getClass().getResource("AMPM_Bar_Chart.fxml"));
-	        loader.load();
-	        Parent p = loader.getRoot();
-	        Stage stage = new Stage();
-	        stage.setScene(new Scene(p));
-	        stage.setTitle("All Customer Attendance Data");
-	        stage.show();
-	    }
-	 
-	 @FXML
-	    private void launchLineChart(Event event) throws IOException{
-		 	FXMLLoader loader = new FXMLLoader();
-	        loader.setLocation(getClass().getResource("Customer_Attendance_Line_Chart.fxml"));
-	        loader.load();
-	        Parent p = loader.getRoot();
-	        Stage stage = new Stage();
-	        stage.setScene(new Scene(p));
-	        stage.setTitle("Week Customer Attendance Data");
-	        stage.show();
-	    }
-
-	 //Shows the extra employee information by launching a mini-window
-	 @FXML
-	    private void setMainMenuViewButtonClick(Event event) throws IOException {
-
-		 if(TableEmployees.getSelectionModel().getSelectedItem()!=null){
-			 	Employee_Profile_ViewModel info = new Employee_Profile_ViewModel(TableEmployees.getSelectionModel().getSelectedItem().getEmployeesID().toString());
-			 	FXMLLoader loader = new FXMLLoader();
-		        loader.setLocation(getClass().getResource("Employee_Profile_View.fxml"));
-		        loader.load();
-		        Parent p = loader.getRoot();
-		        Stage stage = new Stage();
-		        stage.setScene(new Scene(p));
-
-		        Employee_Profile_ViewController profileView = loader.getController();
-		        profileView.setCurrentInfo(info);
-		        stage.show();
-		 }
-		 else{
-			    NotificationType notificationType = NotificationType.ERROR;
-	            TrayNotification tray = new TrayNotification();
-	            tray.setTitle("No Employee Selected");
-	            tray.setMessage("Select Employee to View");
-	            tray.setNotificationType(notificationType);
-	            tray.showAndDismiss(Duration.millis(5000));
-		 }
-	        
-	    }
-	 
-	 //The following validate methods check to see whether the Employee information is valid/ given in the right format
-	 private boolean validateFirstName(){
-		 Pattern p = Pattern.compile("[a-zA-z]+");
-		 Matcher m = p.matcher(txtFirst_Name.getText());
-		 if(m.find() && m.group().equals(txtFirst_Name.getText())){
+	
+	 private boolean validateWord(){
+		 
+		 if(!txtWord.getText().trim().equals("")){
 			 return true;
 		 }
 		 else{
 			 Alert alert = new Alert(AlertType.WARNING);
-		   	 alert.setTitle("Validate Name");
-		   	 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter a Valid First Name");
+			 alert.setTitle("Validate Word");
+			 alert.setHeaderText(null);
+			 alert.setContentText("Please Enter a Word");
 			 alert.showAndWait();
-			 txtFirst_Name.clear();
-			 txtFirst_Name.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 txtFirst_Name.requestFocus();
+			 txtWord.clear();
+			 txtWord.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
+			 txtWord.requestFocus();
 			 
-			 //txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 	
 			 return false;
-		}
-	}
-	
+		 }
+	 }
 	 
-	 private boolean validateLastName(){
-		 Pattern p = Pattern.compile("[a-zA-z]+");
-		 Matcher m = p.matcher(txtLast_Name.getText());
-		 if(m.find() && m.group().equals(txtLast_Name.getText())){
+	 private boolean validateHint(){
+		 
+		 if(!txtHint.getText().trim().equals("")){
+			 return true;
+		 }
+		 else{
+			 Alert alert = new Alert(AlertType.WARNING);
+			 alert.setTitle("Validate Hint");
+			 alert.setHeaderText(null);
+			 alert.setContentText("Please Enter a Hint");
+			 alert.showAndWait();
+			 txtHint.clear();
+			 txtHint.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
+			 txtHint.requestFocus();
+			 
+			 return false;
+		 }
+		}
+	 
+	  private boolean validateCreatorName(){
+		 
+		 if(!txtCreatorName.getText().trim().equals("")){
 			 return true;
 		 }
 		 else{
 			 Alert alert = new Alert(AlertType.WARNING);
 			 alert.setTitle("Validate Name");
 			 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter a Valid Last Name");
+			 alert.setContentText("Please Enter Creator Name");
 			 alert.showAndWait();
-			 txtLast_Name.clear();
-			 txtLast_Name.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 txtLast_Name.requestFocus();
-			 
-			 txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 //txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
+			 txtCreatorName.clear();
+			 txtCreatorName.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
+			 txtCreatorName.requestFocus();
 			 
 			 return false;
 		 }
-	 }
-	 
-	 private boolean validateEmail(){
-		 Pattern p = Pattern.compile("[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9]+([.][a-zA-Z]+)+");
-		 Matcher m = p.matcher(txtEmail.getText());
-		 if(m.find() && m.group().equals(txtEmail.getText())){
-			 return true;
-		 }
-		 else{
-			 Alert alert = new Alert(AlertType.WARNING);
-			 alert.setTitle("Validate Email");
-			 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter a Valid Email");
-			 alert.showAndWait();
-			 txtEmail.clear();
-			 txtEmail.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 txtEmail.requestFocus();
+		}
+	  
+	    private boolean validateGameName(){
 			 
-			 txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 //txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 return false;
-		 }
-	 }
-	 
-	 private boolean validatePhone(){
-		 Pattern p = Pattern.compile("[0-9]{3}[-][0-9]{3}[-][0-9]{4}");
-		 Matcher m = p.matcher(txtPhone.getText());
-		 if(m.find() && m.group().equals(txtPhone.getText())){
-			 return true;
-		 }
-		 else{
-			 Alert alert = new Alert(AlertType.WARNING);
-			 alert.setTitle("Validate Phone Number");
-			 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter a Valid Phone Number (aaa-aaa-aaaa)");
-			 alert.showAndWait();
-			 txtPhone.clear();
-			 txtPhone.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 txtPhone.requestFocus();
-			 
-			 txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 //txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 return false;
-			 
-		 }
-	 }
-	 
-	 private boolean validateDOB(){
-		 if(dtDOB.getValue() != null){
-			 return true;
-		 }
-		 else{
-			 Alert alert = new Alert(AlertType.WARNING);
-			 alert.setTitle("Validate Date");
-			 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter a DOB");
-			 alert.showAndWait();
-			 dtDOB.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 
-			 txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 //dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 return false;
-		 }
-		 
-	 }
-	 
-	 private boolean validateAddress(){
-		 if(txtAddress.getText() != null){
-			 return true;
-		 }
-		 else{
-			 Alert alert = new Alert(AlertType.WARNING);
-			 alert.setTitle("Validate Address");
-			 alert.setHeaderText(null);
-			 alert.setContentText("Please Enter an Address");
-			 alert.showAndWait();
-			 txtAddress.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
-			 txtAddress.requestFocus();
-			 
-			 txtFirst_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtLast_Name.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 //txtAddress.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 txtEmail.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-		   	 txtPhone.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 dtDOB.setStyle("-fx-border-color: ccc; -fx-border-width: 1px ;");
-			 
-			 return false;
-		 } 
-	 }
-	 
-	 //Method to seach for employee based on name
-	 @FXML
-	 public void setOnSearchKeyPressed(KeyEvent event) throws IOException{
-		 if(txtSearch.getText()!=""){
-			 String sqlQuery = "select * FROM Employees where First_Name like '%"+txtSearch.getText()+"%' OR "
-			 		+ "Last_Name like '%"+txtSearch.getText() + "%';";
-			 if(Employee_Table_Screen.getDataFromSqlAndAddToObservableList(sqlQuery)==null){
-		    	 TableEmployees.setPlaceholder(new Label("No Employee With Given Name"));
-		     }
-			 TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList(sqlQuery));
-		 }
-		 else{
-			 TableEmployees.setItems(Employee_Table_Screen.getDataFromSqlAndAddToObservableList("select * FROM Employees"));
-		 }
-	 } 
-	 
-	 //Method to automatically put in dashes when the user types in the phone number
-	 @FXML
-	 public void setOnPhoneKeyReleased(KeyEvent event) throws IOException{
-		 if(txtPhone.getText().length()==3){
-			 txtPhone.setText(txtPhone.getText()+"-");
-			 txtPhone.positionCaret(4);
-		 }
-		 else if(txtPhone.getText().length()==7){
-			 txtPhone.setText(txtPhone.getText()+"-");
-			 txtPhone.positionCaret(8);
-		 }
-		 else if(txtPhone.getText().length()>12 ){
-			 txtPhone.setText(txtPhone.getText().substring(0,12));
-			 txtPhone.positionCaret(12);
-		 }
-	 }
-	 
-	 //Method to launch extra employee information window if the employee is double clicked on the table
-	 @FXML
-	 public void handleDoubleClick(MouseEvent mouseEvent) throws IOException {
-	        if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
-	            if(mouseEvent.getClickCount() == 2){
-	            	if(TableEmployees.getSelectionModel().getSelectedItem()!=null){
-	    			 	Employee_Profile_ViewModel info = new Employee_Profile_ViewModel(TableEmployees.getSelectionModel().getSelectedItem().getEmployeesID().toString());
-	    			 	FXMLLoader loader = new FXMLLoader();
-	    		        loader.setLocation(getClass().getResource("Employee_Profile_View.fxml"));
-	    		        loader.load();
-	    		        Parent p = loader.getRoot();
-	    		        Stage stage = new Stage();
-	    		        stage.setScene(new Scene(p));
-
-	    		        Employee_Profile_ViewController profileView = loader.getController();
-	    		        profileView.setCurrentInfo(info);
-	    		        stage.show();
-	    		 }
-	    		 else{
-	    			    NotificationType notificationType = NotificationType.ERROR;
-	    	            TrayNotification tray = new TrayNotification();
-	    	            tray.setTitle("No Employee Selected");
-	    	            tray.setMessage("Select Employee to View");
-	    	            tray.setNotificationType(notificationType);
-	    	            tray.showAndDismiss(Duration.millis(5000));
-	    		 }
-	            }
+			 if(!txtGameTitle.getText().trim().equals("")){
+				 return true;
+			 }
+			 else{
+				 Alert alert = new Alert(AlertType.WARNING);
+				 alert.setTitle("Validate Title");
+				 alert.setHeaderText(null);
+				 alert.setContentText("Please Enter Title");
+				 alert.showAndWait();
+	
+				 txtGameTitle.setStyle("-fx-border-color: red ; -fx-border-width: 2px ;");
+				 txtGameTitle.requestFocus();
+				 
+				 return false;
+			 }
+		}
+	    
+	    private boolean validateParentID() throws SQLException{
+	    	Pattern p = Pattern.compile("[0-9]*");
+			 Matcher m = p.matcher(txtGameID.getText());
+			 if(m.find() && m.group().equals(txtGameID.getText())){
+				 
+			 }
+			 else{
+				 Alert alert = new Alert(AlertType.WARNING);
+				 alert.setTitle("Validate ID");
+				 alert.setHeaderText(null);
+				 alert.setContentText("Please Enter a Number for the ID");
+				 alert.showAndWait();
+				 
+				 return false;
+			 }	 
+			
+			connection = SqliteConnection.Connector();
+	        statement = connection.createStatement();
+	        resultSet = statement.executeQuery("select * from WordGames"); 
+	        if(resultSet.isBeforeFirst()){    
+	        	while(resultSet.next()){
+	        		if(Integer.parseInt(txtGameID.getText()) == resultSet.getInt("ParentGameID") && !GameIDPass){
+	        			
+	        			Alert alert = new Alert(AlertType.WARNING);
+	                    alert.setTitle("Validate GameID");
+	                    alert.setHeaderText(null);
+	                    alert.setContentText("Please Enter Another Game ID, this one is taken");
+	                    alert.showAndWait();
+	                    
+	                    statement.close();
+	                    resultSet.close();
+	                    connection.close();	
+	                    
+	                    return false;
+	        		}		
+	        	}	  
 	        }
-	 }
+	        
+	        statement.close();
+            resultSet.close();
+            connection.close();	
+            GameIDPass = true;
+            return true;
+	    }
 }
 
 	 
