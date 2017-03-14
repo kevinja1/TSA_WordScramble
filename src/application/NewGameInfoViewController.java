@@ -257,7 +257,7 @@ public class NewGameInfoViewController implements Initializable {
 		             
 		            statement.executeUpdate(sqlQuery);
 		       
-		            TableWords.setItems(Word_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames;"));
+		            TableWords.setItems(Word_Table_Screen.getDataFromSqlAndAddToObservableList("SELECT * FROM WordGames where ParentGameID =" + txtGameID.getText() +";"));
 		            statement.close();
 		            connection.close();
 
@@ -397,6 +397,21 @@ public class NewGameInfoViewController implements Initializable {
             GameIDPass = true;
             return true;
 	    }
+	    
+	    
+	    @FXML
+	    private void launchWelcome(Event event) throws IOException{
+	    	((Node)event.getSource()).getScene().getWindow().hide();
+	    	FXMLLoader loader = new FXMLLoader();
+	        loader.setLocation(getClass().getResource("WelcomeView.fxml"));
+	        loader.load();
+	        Parent p = loader.getRoot();
+	        Stage stage = new Stage();
+	        stage.setScene(new Scene(p));
+	        stage.setTitle("Welcome");
+	        stage.show();
+	    }
+	    
 }
 
 	 

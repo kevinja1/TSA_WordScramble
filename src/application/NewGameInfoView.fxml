@@ -53,6 +53,7 @@
                   <Ellipse fill="#ff3b1f" layoutX="198.0" layoutY="511.0" radiusX="66.0" radiusY="25.0" stroke="BLACK" strokeType="INSIDE" />
                   <TextField fx:id="txtGameID" alignment="CENTER" layoutX="219.0" layoutY="184.0" prefHeight="27.0" prefWidth="109.0" promptText="Game ID" />
                   <Label layoutX="35.0" layoutY="189.0" prefHeight="17.0" prefWidth="179.0" text="Create an ID for your game:" />
+                  <Button fx:id="btBack" layoutX="17.0" layoutY="55.0" mnemonicParsing="false" onAction="#launchWelcome" text="Back" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="598.0" prefWidth="675.0">
